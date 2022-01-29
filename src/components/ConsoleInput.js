@@ -5,28 +5,33 @@ const ConsoleInput = ({onChange, onSubmit}) => {
     const [value, setValue] = React.useState("");
 
     const handleKeyPress = (e) => {
+        let newVal = value;
+
         if(e.key.length === 1) {
-            setValue(`${value}${e.key}`);
+            newVal = `${value}${e.key}`;
         }
         if(e.code === 'Backspace') {
-            setValue(value.substring(0, value.length - 1));
+            newVal = value.substring(0, value.length - 1);
         }
         if(e.code === 'Space') {
-            setValue(`${value} `);
+            newVal = `${value} `
+        }
+
+        if(newVal !== value) {
+            setValue(newVal);
+            onChange(newVal);
+            return;
         }
 
         if(e.code === 'Enter') {
             onSubmit();
-        } else {
-            onChange(value);
         }
       }
 
     React.useEffect(() => {
         document.addEventListener('keydown', handleKeyPress);
-
-          return () => document.removeEventListener('keydown', handleKeyPress);
-    }, [value, setValue]);
+        return () => document.removeEventListener('keydown', handleKeyPress);
+    }, [handleKeyPress]);
     
     return (
       <div style={{display: 'flex', height: 20}}>

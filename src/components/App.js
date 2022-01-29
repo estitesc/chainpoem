@@ -57,10 +57,14 @@ function App() {
     setLoading(true);
     poem.methods.addLine(content).send({ from: account })
     .on('confirmation', (confNumber, receipt) => {
-      console.log("conf back", confNumber, receipt);
+      console.log("confirmed line added", confNumber, receipt);
+      loadBlockchainData();
+    })
+    .on('error', (error) => {
+      console.log("error adding line", error);
       setLoading(false);
     })
-  }, []);
+  }, [poem, setLoading]);
 
   return (
     <div>

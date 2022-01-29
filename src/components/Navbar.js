@@ -2,8 +2,6 @@ import React from 'react';
 import _ from 'lodash';
 
 const Navbar = ({account}) => {
-  console.log("account is ", account);
-    
     return (
       <nav style={{backgroundColor: '#150F09', fontFamily: 'monospace'}}>
         <div style={{display: 'flex', flexDirection: 'row', flex: 1, justifyContent: 'right'}}>
