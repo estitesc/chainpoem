@@ -9,16 +9,18 @@ contract Poem {
         uint id;
         string content;
         address payable poet;
+        uint addedAt;
     }
 
     event LineAdded(
         uint id,
         string content,
-        address payable poet
+        address payable poet,
+        uint addedAt
     );
 
     constructor() public {
-        name = "Blockpoem d'App";
+        name = "Sonnet Dapp";
     }
 
     function addLine(string memory _content) public {
@@ -27,8 +29,8 @@ contract Poem {
         // Increment product count
         lineCount ++;
         // Create the product
-        lines[lineCount] = PoemLine(lineCount, _content, msg.sender);
+        lines[lineCount] = PoemLine(lineCount, _content, msg.sender, block.timestamp);
         // Trigger an event
-        emit LineAdded(lineCount, _content, msg.sender);
+        emit LineAdded(lineCount, _content, msg.sender, block.timestamp);
     }
 }

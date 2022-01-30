@@ -1,3 +1,5 @@
+const { assert } = require('chai')
+
 const Poem = artifacts.require('./Poem.sol')
 
 require('chai')
@@ -22,7 +24,7 @@ contract('Poem', ([deployer, poet]) => {
 
     it('has a name', async () => {
       const name = await poem.name()
-      assert.equal(name, 'Blockpoem d\'App')
+      assert.equal(name, 'Sonnet Dapp')
     })
   })
 
@@ -41,7 +43,7 @@ contract('Poem', ([deployer, poet]) => {
       assert.equal(event.id.toNumber(), lineCount.toNumber(), 'id is correct')
       assert.equal(event.content, 'two bee or not two bees?', 'name is correct')
       assert.equal(event.poet, poet, 'owner is correct')
-
+      
       // FAILURE: Product must have a name
       await await poem.addLine('', { from: poet }).should.be.rejected;
     })
