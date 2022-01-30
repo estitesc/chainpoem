@@ -10,7 +10,8 @@ const BasicInput = ({onChange}) => {
                 const value = e.target.value;
                 setVal(value);
                 onChange(value);
-            }} 
+            }}
+            maxLength = {36}
         />
     );
 }

@@ -5,26 +5,30 @@ const ConsoleInput = ({onChange, onSubmit}) => {
     const [value, setValue] = React.useState("");
 
     const handleKeyPress = (e) => {
+        if(e.code === 'Enter') {
+            onSubmit();
+            return;
+        }
+
         let newVal = value;
 
-        if(e.key.length === 1) {
-            newVal = `${value}${e.key}`;
-        }
         if(e.code === 'Backspace') {
             newVal = value.substring(0, value.length - 1);
         }
-        if(e.code === 'Space') {
-            newVal = `${value} `
+
+        if(value.length <= 36) {
+            if(e.key.length === 1) {
+                newVal = `${value}${e.key}`;
+            }
+            
+            if(e.code === 'Space') {
+                newVal = `${value} `
+            }
         }
 
         if(newVal !== value) {
             setValue(newVal);
             onChange(newVal);
-            return;
-        }
-
-        if(e.code === 'Enter') {
-            onSubmit();
         }
       }
 
