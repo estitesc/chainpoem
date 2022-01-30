@@ -1,69 +1,104 @@
 import * as React from 'react';
-import ConsoleInput from './ConsoleInput';
-import BasicInput from './BasicInput';
+import './App.css';
+import Web3 from 'web3';
+import Navbar from './Navbar';
+import Poem from '../abis/Poem.json';
+import PoemDisplay from './PoemDisplay';
+import usePathId from '../hooks/usePathId';
 
-const width = window.innerWidth
-  || document.documentElement.clientWidth
-  || document.body.clientWidth;
-const isDesktop = width >= 768;
+const LINES_PER_POEM = 4;
 
-const Main = ({lines, addLine}) => {
-    const [content, setContent] = React.useState("");
+const loadWeb3 = async () => {
+  if (window.ethereum) {
+    window.web3 = new Web3(window.ethereum)
+    await window.ethereum.enable()
+  }
+  else if (window.web3) {
+    window.web3 = new Web3(window.web3.currentProvider)
+  }
+  else {
+    window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
+  }
+}
 
-    const submitLine = React.useCallback(() => {
-      addLine(content);
-    },[addLine, content]);
+function Main() {
+  const pathId = usePathId();
+  // const location = useLocation();
+  // const pathId = parseInt(location.pathname.replace("/", ""));
+  // console.log("location", location);
 
-    return (
-      <div 
-        id="content" 
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          flexDirection:'column', 
-          width: '100%'
-        }}>
-        <div style={{
-          minWidth: 365,
-          marginLeft: isDesktop ? 72 : 0,
-        }}>
-        <div id="poem">
-          { lines.map((line, key) => {
-            return(
-              <div key={key}>{line.content}</div>
-            )
-          })}
-        </div>
-        {
-          isDesktop ?
-          <>
-            <ConsoleInput onChange={(value)=>{setContent(value)}} onSubmit={submitLine} />
-            <div style={{fontSize: 10, marginTop: 24}}>
-              Press "Enter" to submit line
-            </div>
-          </>
-          :
-          <div style={{display: 'flex', flexDirection: 'column', marginTop: 12}}>
-            <BasicInput onChange={(value)=>{setContent(value)}} />
-            <button 
-              onClick={submitLine} 
-              style={{
-                marginTop: 12, 
-                backgroundColor: '#7A401F', 
-                borderWidth: 0, 
-                borderRadius: 4,
-                color: '#F9F7F5',
-                fontWeight: 'bold',
-                padding: '6px 0',
-                }}
-              >
-                Submit Line
-              </button>
-          </div>
+  const [account, setAccount] = React.useState(undefined);
+  const [poem, setPoem] = React.useState(undefined);
+  const [lines, setLines] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    loadWeb3();
+    loadBlockchainData();
+  }, []);
+
+  const loadBlockchainData = async () => {
+    const web3 = window.web3
+    // Load account
+    const accounts = await web3.eth.getAccounts()
+    setAccount(accounts[0]);
+    const networkId = await web3.eth.net.getId()
+    const networkData = Poem.networks[networkId]
+    if(networkData) {
+      const poem = web3.eth.Contract(Poem.abi, networkData.address)
+      setPoem(poem);
+      const lineCount = await poem.methods.lineCount().call()
+      // Load lines
+      const loadedLines = [];
+      for (var i = 1; i <= lineCount; i++) {
+        const line = await poem.methods.lines(i).call();
+        loadedLines.push(line);
+      }
+      setLines(loadedLines);
+      setLoading(false);
+    } else {
+      window.alert('Poem contract not deployed to detected network.')
+    }
+  }
+
+  const addLine = React.useCallback((content) => {
+    setLoading(true);
+    poem.methods.addLine(content).send({ from: account })
+    .on('confirmation', (confNumber, receipt) => {
+      console.log("confirmed line added", confNumber, receipt);
+      loadBlockchainData();
+    })
+    .on('error', (error) => {
+      console.log("error adding line", error);
+      setLoading(false);
+    })
+  }, [poem, setLoading]);
+
+  const poemCount = Math.ceil(lines.length / LINES_PER_POEM);
+  const poemId = pathId < poemCount ? pathId : poemCount - 1;
+
+  const isLatest = lines.length < (LINES_PER_POEM * poemId) + LINES_PER_POEM;
+  const activeLineCount = isLatest ? lines.length % LINES_PER_POEM : LINES_PER_POEM;
+  const startLineId = poemId * LINES_PER_POEM;
+  const endLineId = startLineId + activeLineCount;
+  const activeLines = lines.slice(startLineId, endLineId);
+
+  
+  console.log("total poems", poemCount);
+
+  console.log("lines are ", lines);
+
+  return (
+    <>
+      <Navbar account={account} poemCount={poemCount} poemId={poemId} />
+      <div style={{paddingTop: 96}}>
+        { loading
+          ? <div id="loader" className="text-center"><p className="text-center">Loading...</p></div>
+          : <PoemDisplay lines={activeLines} addLine={addLine} isLatest={isLatest} />
         }
-        </div>
       </div>
-    );
+      </>
+  );
 }
 
 export default Main;
