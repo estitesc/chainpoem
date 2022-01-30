@@ -23,7 +23,10 @@ const Main = ({lines, addLine}) => {
           flexDirection:'column', 
           width: '100%'
         }}>
-        <div>
+        <div style={{
+          minWidth: 365,
+          marginLeft: isDesktop ? 72 : 0,
+        }}>
         <div id="poem">
           { lines.map((line, key) => {
             return(
