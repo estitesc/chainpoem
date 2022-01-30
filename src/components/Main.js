@@ -6,7 +6,7 @@ import Poem from '../abis/Poem.json';
 import PoemDisplay from './PoemDisplay';
 import usePathId from '../hooks/usePathId';
 
-const LINES_PER_POEM = 4;
+export const LINES_PER_POEM = 14;
 
 const loadWeb3 = async () => {
   if (window.ethereum) {
@@ -23,9 +23,6 @@ const loadWeb3 = async () => {
 
 function Main() {
   const pathId = usePathId();
-  // const location = useLocation();
-  // const pathId = parseInt(location.pathname.replace("/", ""));
-  // console.log("location", location);
 
   const [account, setAccount] = React.useState(undefined);
   const [poem, setPoem] = React.useState(undefined);
@@ -74,7 +71,7 @@ function Main() {
     })
   }, [poem, setLoading]);
 
-  const poemCount = Math.ceil(lines.length / LINES_PER_POEM);
+  const poemCount = Math.ceil((lines.length + 1) / LINES_PER_POEM);
   const poemId = pathId < poemCount ? pathId : poemCount - 1;
 
   const isLatest = lines.length < (LINES_PER_POEM * poemId) + LINES_PER_POEM;
@@ -83,17 +80,12 @@ function Main() {
   const endLineId = startLineId + activeLineCount;
   const activeLines = lines.slice(startLineId, endLineId);
 
-  
-  console.log("total poems", poemCount);
-
-  console.log("lines are ", lines);
-
   return (
     <>
       <Navbar account={account} poemCount={poemCount} poemId={poemId} />
       <div style={{paddingTop: 96}}>
         { loading
-          ? <div id="loader" className="text-center"><p className="text-center">Loading...</p></div>
+          ? <div id="loader" className="text-center"><p className="text-center">Writing...</p></div>
           : <PoemDisplay lines={activeLines} addLine={addLine} isLatest={isLatest} />
         }
       </div>

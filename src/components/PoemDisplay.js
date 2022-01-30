@@ -16,9 +16,10 @@ const Main = ({lines, addLine, isLatest}) => {
 
     const renderEditSection = () => {
       if(!isLatest) {
+        const lastLine = lines[lines.length - 1];
         return (
           <div style={{fontSize: 10, marginTop: 24}}>
-            Minted on xyz date
+            {new Date(lastLine.addedAt.toNumber() * 1000).toDateString()}
           </div>
         )
       }
@@ -68,10 +69,6 @@ const Main = ({lines, addLine, isLatest}) => {
         }}>
         <div id="poem">
           { lines.map((line, key) => {
-            if(line.createdAt) {
-              console.log("line", line.createdAt.toString());
-            }
-            
             return(
               <div key={key}>{line.content}</div>
             )
